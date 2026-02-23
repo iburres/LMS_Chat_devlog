@@ -99,3 +99,24 @@ No other students can see the conversation (FERPA compliant — enforced at API 
 - `client/src/hooks/useOHMessages.js` — loads history on mount, joins socket room, listens for `new_oh_message`, exposes `send()`
 - `client/src/components/officeHours/OHChatPanel.jsx` — 300px inline chat panel with auto-scroll and Enter-to-send
 - `client/src/pages/OfficeHours.jsx` — full light-theme rewrite; status badges (color-coded), "Open Chat" toggle per card (disabled for cancelled requests), instructor Schedule/Decline/Mark Complete controls
+
+---
+
+## 2026-02-23 — Unread counts + Office Hours badge
+
+### Channel unread counts
+- DB: `channel_reads (user_id, channel_id, last_read_at)` — PK on both columns
+- `GET /api/channels/unread` — counts messages after `last_read_at` per channel (aggregate query)
+- `POST /api/channels/:id/read` — upserts `last_read_at = GREATEST(existing, NOW())`
+- `useUnreadCounts(activeChannelId)` hook: loads server counts, increments in real-time via `new_message` socket events for non-active channels, clears + persists when active channel changes
+- Orange badge on channel items in sidebar; hidden when channel is active
+
+### Office Hours pending badge
+- `GET /api/office-hours/pending-count` — lightweight count query for instructors/TAs
+- `POST /api/office-hours` now emits `oh_request_created` to `context:{contextId}` socket room
+- `Chat.jsx` listens for `oh_request_created` and invalidates the count query → instant badge update
+- Badge appears next to "Office Hours" link in sidebar (instructors/TAs only), refetches every 30s as fallback
+
+### Demo data
+- `devLogin.js` seeder now always ensures "Alex Chen" (student) exists with one pending OH request
+- Guarantees instructors always see the badge on first login
