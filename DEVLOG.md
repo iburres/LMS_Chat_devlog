@@ -147,3 +147,30 @@ No other students can see the conversation (FERPA compliant — enforced at API 
 ### Sidebar UX fix
 - Removed `office-hours` from `DEFAULT_CHANNELS` seed — Office Hours is a dedicated page, not a chat channel
 - Sidebar footer redesigned: user avatar/name/role in one row, full-width "Office Hours" / "Request Office Hours" button below with orange pending-count badge for instructors/TAs
+
+---
+
+## 2026-02-23 — Bug fixes: server crash + channel delete
+
+### Server crash on channel delete
+- Root cause: `POST /channels/:id/read` inserted into `channel_reads` with FK on `channel_id`; if the channel was deleted between client sending the request and server processing it, a FK violation crashed the server process
+- Fix: changed INSERT to use `SELECT ... WHERE EXISTS (SELECT 1 FROM channels WHERE id = $2)` — silently no-ops if channel is gone
+
+### Channel not removed from sidebar after delete
+- Root cause: `handleDelete` relied on the socket round-trip to call `qc.invalidateQueries`; if server crashed during that window the UI stayed stale
+- Fix: `removeFromCache(channelId)` optimistically removes the channel from the React Query cache before the API call — instant UI update regardless of server state
+
+---
+
+## 2026-02-23 — Mobile-responsive layout
+
+- `useMediaQuery(query)` hook — reactive wrapper around `window.matchMedia`
+- **Breakpoint: 640px**
+- Sidebar collapses off-screen on mobile; slides in as a fixed overlay (`transform: translateX`) with 0.25s transition
+- Semi-transparent backdrop dismisses sidebar on tap
+- Selecting a channel auto-closes the sidebar
+- Empty state shows a "Browse channels" button on mobile
+- `ChatWindow` gains a mobile top bar: hamburger (☰) + `#channel-name`
+- `MessageInput` padding uses `env(safe-area-inset-bottom)` for iOS home indicator
+- `viewport-fit=cover` added to meta viewport for notched devices
+- `ChannelList.onSelect` now passes full `{id, name}` channel object so Chat.jsx can display the name in the mobile header without an extra query
