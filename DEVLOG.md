@@ -76,3 +76,26 @@ Replaced the Discord dark theme with a Canvas-compatible light theme:
 
 ### Architecture note
 - `io` (Socket.io instance) now shared with Express routes via `req.io` middleware, enabling REST handlers to emit socket events directly.
+
+---
+
+## 2026-02-23 — Private Office Hours chat
+
+Each student gets a private message thread with their instructor/TA.
+No other students can see the conversation (FERPA compliant — enforced at API + socket layer).
+
+### DB
+- New `office_hour_messages` table: `id`, `office_hour_request_id`, `user_id`, `content`, `created_at`
+- Index on `(office_hour_request_id, created_at ASC)` for efficient history fetch
+- Migration: `server/migrations/002_office_hour_messages.sql`
+
+### Server
+- `GET /api/office-hours/:id/messages` — returns message history; `assertAccess` verifies student owns the request OR user is instructor/TA in the context
+- `POST /api/office-hours/:id/messages` — inserts message, broadcasts `new_oh_message` via Socket.io to `oh:{requestId}` room
+- `server/sockets/chat.js` — new `join_oh_session` / `leave_oh_session` handlers; access re-verified in socket layer before joining room
+
+### Client
+- `client/src/api/index.js` — added `fetchOHMessages`, `sendOHMessage`
+- `client/src/hooks/useOHMessages.js` — loads history on mount, joins socket room, listens for `new_oh_message`, exposes `send()`
+- `client/src/components/officeHours/OHChatPanel.jsx` — 300px inline chat panel with auto-scroll and Enter-to-send
+- `client/src/pages/OfficeHours.jsx` — full light-theme rewrite; status badges (color-coded), "Open Chat" toggle per card (disabled for cancelled requests), instructor Schedule/Decline/Mark Complete controls
