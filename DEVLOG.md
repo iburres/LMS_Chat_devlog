@@ -62,5 +62,17 @@ Replaced the Discord dark theme with a Canvas-compatible light theme:
 - Soft-delete preserved in DB (`deleted_at`), FERPA compliant
 - Both edit and delete broadcast real-time via Socket.io to all channel members
 
+---
+
+## 2026-02-23 — Channel creation UI
+
+- `+` button appears next to "CHANNELS" label in sidebar for instructors and TAs only
+- Modal with channel name (slugified with live preview), optional description, and "who can post" checkboxes (instructor always enabled, TA and students toggleable)
+- Escape or clicking outside closes the modal
+- On success, channels list updates immediately via React Query cache invalidation
+- Both UI and backend (`requireRole('instructor', 'ta')`) enforce the restriction — students cannot create channels
+
+---
+
 ### Architecture note
 - `io` (Socket.io instance) now shared with Express routes via `req.io` middleware, enabling REST handlers to emit socket events directly.
