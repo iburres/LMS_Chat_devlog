@@ -37,3 +37,30 @@ Added a dev-only login flow so we can work on the UI without Canvas:
 - Pulled and started postgres:16-alpine, redis:7-alpine, mongo:7 images.
 - `docker-compose.yml`: removed deprecated `version: '3.8'` field (Docker Compose v2).
 - Migrations ran cleanly against fresh Postgres.
+
+---
+
+## 2026-02-22 — Light theme + message edit/delete
+
+### Light theme
+Replaced the Discord dark theme with a Canvas-compatible light theme:
+- Backgrounds: white sidebar, `#F5F7FA` main area
+- Text: `#1F2D3D` (dark navy-gray), `#6B7780` secondary, `#9EA7AD` muted
+- Accent: Canvas Orange `#E66000` — buttons, active channel highlight, own message bubbles, avatars
+- Borders: `#DCE0E5`
+- Active channel: `#FFF0E8` background, `#C4520A` text
+
+### Message edit
+- Author-only inline edit (pencil icon appears on hover)
+- Bubble turns into a textarea with Save/Cancel controls
+- Enter saves, Escape cancels
+- Edited messages show `(edited)` label
+- **FERPA**: original content stored in `audit_logs.metadata` before overwrite
+
+### Message delete
+- Author or instructor/TA can delete (trash icon on hover)
+- Soft-delete preserved in DB (`deleted_at`), FERPA compliant
+- Both edit and delete broadcast real-time via Socket.io to all channel members
+
+### Architecture note
+- `io` (Socket.io instance) now shared with Express routes via `req.io` middleware, enabling REST handlers to emit socket events directly.
