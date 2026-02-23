@@ -120,3 +120,30 @@ No other students can see the conversation (FERPA compliant — enforced at API 
 ### Demo data
 - `devLogin.js` seeder now always ensures "Alex Chen" (student) exists with one pending OH request
 - Guarantees instructors always see the badge on first login
+
+---
+
+## 2026-02-23 — Right-click context menus + channel leave/delete
+
+### Context menu component
+- `client/src/components/ContextMenu.jsx` — reusable portaled menu (renders into `document.body` via `createPortal` so it's never clipped by scroll containers)
+- Dismisses on outside click or Escape; auto-clamps position to viewport edges
+- Supports `{ label, action, danger? }` items and `'divider'` separators
+
+### Message right-click
+- Right-clicking any message you have permissions on shows Edit / Delete
+- Complements existing hover buttons — same actions, alternate trigger
+- No menu shown if the user has neither edit nor delete permission
+
+### Channel right-click
+- Right-click any channel in the sidebar to get a context menu
+- **Leave Channel** (all roles) — inserts into `channel_leaves (user_id, channel_id)` table; channel is hidden from that user's list permanently (survives refresh); deselects channel if it was active
+- **Delete Channel** (instructors/TAs only, shown in red) — hard-deletes the channel and cascades to messages; emits `channel_deleted` socket event to all context members so it disappears from everyone's sidebar in real time
+- DB: `channel_leaves` table — migration 004
+- `GET /api/channels` updated to exclude channels the user has left via `NOT EXISTS` subquery
+- `POST /api/channels/:id/leave` — inserts leave record
+- `DELETE /api/channels/:id` — instructor/TA only, emits socket event after delete
+
+### Sidebar UX fix
+- Removed `office-hours` from `DEFAULT_CHANNELS` seed — Office Hours is a dedicated page, not a chat channel
+- Sidebar footer redesigned: user avatar/name/role in one row, full-width "Office Hours" / "Request Office Hours" button below with orange pending-count badge for instructors/TAs
