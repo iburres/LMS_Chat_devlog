@@ -173,6 +173,25 @@ The server was updated to support add-only behavior, a new remove-my-reaction ac
 
 ---
 
+### 2026-02-24 — Entry 015: Action bar improvements + quick dev login
+
+**Larger action icons** — all icons in the hover action bar were increased in size for easier clicking and better visibility.
+
+**Direct reaction buttons in the bar** — three reactions are now one click away directly in the action bar without opening a picker:
+- 🙌 Job well done
+- 👍 Thumbs up
+- 👎 Thumbs down
+
+A thin divider separates the reaction buttons from the action buttons (Reply, Forward, Edit, Delete).
+
+**Additional reactions picker repositioned** — the ☺ button now opens a secondary picker for less common reactions (❤️ 😂 😮 😢 ✅ ❓). This picker opens to the **left** of the action bar rather than above it, so it is never blocked by the channel header when hovering messages near the top of the screen.
+
+**Updated icons** — the edit button now shows a pencil emoji and the delete button shows a trashcan emoji.
+
+**Quick dev login** — the developer login screen now has one-click preset buttons to log in immediately as "Ian Burres — Instructor" or "Alex Chen — Student", making it easy to switch between accounts for testing features like reactions that require two different users.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.

@@ -225,6 +225,30 @@ The previous model toggled a reaction off if you clicked it again. The new model
 
 ---
 
+## 2026-02-24 — Action bar improvements + quick dev login
+
+### Larger action icons
+All icons in the hover action bar were increased in size for easier clicking and better visibility on all screen sizes.
+
+### Direct reaction buttons
+Three reactions are now available as one-click buttons directly in the action bar, without opening a picker:
+- 🙌 Job well done
+- 👍 Thumbs up
+- 👎 Thumbs down
+
+A thin visual divider separates the reaction buttons from the other action buttons. Buttons already reacted to are highlighted in the accent color.
+
+### Additional reactions picker — opens left
+The ☺ button opens a secondary picker for less common reactions (❤️ 😂 😮 😢 ✅ ❓). Previously this picker opened upward and was obscured by the channel header when hovering messages near the top of the window. It now opens to the left of the action bar, staying fully visible regardless of where the message sits in the scroll window.
+
+### Updated icons
+The edit button now shows a pencil emoji and the delete button shows a trashcan emoji, replacing the previous text symbols.
+
+### Quick dev login presets
+The developer login screen now shows two one-click buttons at the top: "Ian Burres — Instructor" and "Alex Chen — Student". Clicking either logs in immediately without filling out the form. The manual name/role form remains available below for other test users. This makes switching between accounts straightforward when testing features that require two users — such as verifying that reaction counts and names appear correctly from a second user's perspective.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
