@@ -12,9 +12,9 @@ A channel-based real-time chat tool that lives inside Canvas as an LTI 1.3 app. 
 
 **Key properties:**
 - LTI v1.3 + OAuth2 — launches directly from within Canvas
-- FERPA compliant — PII encrypted at rest, full audit trail
-- Course-isolated — students in PROG101 cannot see PROG102 chats
-- Real-time — Socket.io with Redis for live presence and messaging
+- FERPA compliant — student data encrypted at rest, full audit trail
+- Course-isolated — students in one course cannot see another course's chats
+- Real-time — live messaging, presence, and typing indicators via Socket.io and Redis
 
 ---
 
@@ -24,9 +24,8 @@ A channel-based real-time chat tool that lives inside Canvas as an LTI 1.3 app. 
 |---|---|
 | Backend | Node.js + Express |
 | LTI | ltijs (LTI v1.3) |
-| Real-time | Socket.io + Redis adapter |
+| Real-time | Socket.io + Redis |
 | Database | PostgreSQL + Redis |
-| LTI internal | MongoDB (ltijs) |
 | Frontend | React + Vite |
 
 ---
@@ -37,212 +36,140 @@ A channel-based real-time chat tool that lives inside Canvas as an LTI 1.3 app. 
 
 ### 2026-02-22 — Entry 001: Project scaffold
 
-Full project scaffold from scratch. 41 files across server and client.
+Built the full project scaffold from scratch — 41 files across server and client.
 
-**Server highlights:**
-- `ltijs` wired up for LTI v1.3 — OIDC login flow, JWT validation, JWKS, platform registration
-- PostgreSQL schema with course isolation baked in at the FK level (`context_id` on every table)
-- PII (student name + email) encrypted with AES-256-GCM before storage — key never touches the DB
-- `audit_logs` table records every read/write of student data per FERPA requirements
-- Role-based middleware: `instructor` / `ta` / `student` — enforced on every route
-- REST API: session bootstrap, channels, paginated messages, soft-delete, office hours, full-text search
-- Full-text search via PostgreSQL `tsvector` + GIN index — no external search engine needed
-- Socket.io with Redis adapter for horizontal scaling
-- Typing indicators + presence tracking via Redis sets
-- docker-compose: Postgres 16, Redis 7, MongoDB 7
+**Server:** LTI v1.3 launch flow, PostgreSQL schema with course isolation at the data layer, AES-256-GCM encryption of all student PII before it touches the database, FERPA audit logging on every read and write, role-based access control (instructor / TA / student), REST API covering channels, paginated message history, office hours, and full-text search. Full-text search is handled entirely by PostgreSQL with no external search engine. Socket.io with a Redis adapter for horizontal scaling. Typing indicators and presence tracking via Redis.
 
-**Client highlights:**
-- Channel-based UI in React + Vite
-- Channel sidebar, live chat window, infinite scroll message history
-- Search overlay with ranked results scoped to the current course
-- Office hours request + scheduling UI (role-aware — instructors see all requests)
-- `useSocket` / `useMessages` / `usePresence` hooks
-- Vite proxy — `/api` and `/socket.io` forward to Express in dev
+**Client:** Channel sidebar, live chat window with infinite scroll, search overlay scoped to the current course, office hours request and scheduling UI, development proxy routing API and socket traffic to the local server.
 
 ---
 
 ### 2026-02-22 — Entry 002: First successful boot + dev login
 
-Got the scaffolded app running end-to-end for the first time.
+Got the app running end-to-end for the first time.
 
 **Startup bugs fixed:**
-- `ioredis` ESM import — changed to `import Redis from 'ioredis'` + `new Redis(url)`; removed manual `.connect()` (ioredis auto-connects)
-- `ltijs` ESM import — changed to `import { Provider as Lti } from 'ltijs'`
-- `Lti.server` is private — deploy with `serverless: true`, wrap `Lti.app` in `http.createServer()`, pass to Socket.io
-- ltijs blocks all routes by default — `Lti.whitelist(new RegExp('^/api'))` lets our own auth handle API routes
-- Missing `.env` — created `server/.env` from `.env.example` with generated secrets
+- The Redis client library required a different initialization pattern in ES modules than what was scaffolded — the import style and an unnecessary manual connection call were both corrected.
+- The LTI library's main export does not expose the setup method; the named class had to be imported directly.
+- The LTI library normally controls the HTTP server, making it inaccessible for Socket.io to attach to. Running it in serverless mode and constructing the server manually resolved the conflict.
+- The LTI library was intercepting all requests — including our own API routes — and rejecting them with an auth error. The API path prefix was whitelisted so the LTI layer only guards the LTI launch flow.
+- The server crashed immediately on startup because no environment file existed. Created one from the template with freshly generated secrets.
 
-**Dev login flow:**
-- `POST /api/dev-login` seeds a fake platform, context, user, and membership in Postgres and creates a real session
-- React form (name + role picker) calls the API then does `window.location.href = '/app'` on success
-- Solved a cookie-through-proxy-redirect bug by returning JSON and redirecting client-side
+**Dev login:** A developer form lets you enter a name and pick a role; the server creates a fully realistic session backed by the real database so the UI can be worked on without a live Canvas installation.
 
 ---
 
 ### 2026-02-22 — Entry 003: Light theme + message edit/delete
 
-**Light theme** — Canvas-compatible palette:
-- Accent: Canvas Orange `#E66000`
-- Backgrounds: white sidebar, `#F5F7FA` main area
-- Text: `#1F2D3D` (primary), `#6B7780` (secondary), `#9EA7AD` (muted)
+**Light theme** designed to match Canvas brand guidelines — white backgrounds, Canvas Orange (#E66000) as the accent color for buttons, active states, and own-message bubbles.
 
-**Message edit:**
-- Author-only inline edit; textarea replaces bubble on click
-- Enter saves, Escape cancels; `(edited)` label shown after save
-- FERPA: original content stored in `audit_logs.metadata` before overwrite
+**Message edit:** Authors can edit their own messages inline. The original content is stored in the audit log before the change is saved (FERPA requirement). Edits broadcast to all connected users in real time and are marked with an "(edited)" indicator.
 
-**Message delete:**
-- Author or instructor/TA; soft-delete (`deleted_at`) preserves audit trail
-- Both edit and delete broadcast in real time via Socket.io
+**Message delete:** Authors can delete their own messages; instructors and TAs can delete any message. Records are soft-deleted so the audit trail is preserved. Deletes broadcast in real time.
 
 ---
 
 ### 2026-02-23 — Entry 004: Channel creation UI
 
-- `+` button in sidebar for instructors/TAs only
-- Modal: channel name (slugified with live preview), description, "who can post" checkboxes
-- Escape or click-outside closes; React Query cache invalidated on success
-- `requireRole('instructor', 'ta')` enforced on both UI and backend
+Instructors and TAs see a create button next to the channels heading. A modal lets them name the channel (with a live slug preview), add a description, and choose who can post. The restriction is enforced on both the client and the server — students cannot create channels. The new channel appears in the sidebar immediately without a page refresh.
 
 ---
 
 ### 2026-02-23 — Entry 005: Private Office Hours chat
 
-Each student gets a private message thread with their instructor/TA — no other students can see it (enforced at API + socket layer).
+Each student gets a private message thread with their instructor or TA tied to their specific office hours request. No other students can see the conversation — access is enforced at both the API and real-time layers, in compliance with FERPA.
 
-- New `office_hour_messages` table; index on `(office_hour_request_id, created_at ASC)`
-- `GET/POST /api/office-hours/:id/messages` — access checked: student owns request OR user is instructor/TA
-- Socket room `oh:{requestId}`; `join_oh_session` / `leave_oh_session` events with server-side access re-verification
-- `useOHMessages` hook + `OHChatPanel` inline chat panel (auto-scroll, Enter-to-send)
-- Office Hours page fully rewritten: light theme, color-coded status badges, "Open Chat" toggle per card
+Messages persist across sessions, load on open, and arrive in real time. Students see an "Open Chat" toggle on their request card; instructors see the same panel when reviewing requests. The Office Hours page was redesigned with a light theme, color-coded status badges, and role-appropriate action controls.
 
 ---
 
 ### 2026-02-23 — Entry 006: Unread counts + Office Hours badge
 
-**Channel unread counts:**
-- `channel_reads (user_id, channel_id, last_read_at)` table
-- `GET /api/channels/unread` + `POST /api/channels/:id/read`
-- `useUnreadCounts` hook: loads server counts, increments live via socket, clears when channel opens
-- Orange badge on channel items in sidebar
+**Channel unread counts:** Each channel in the sidebar shows an orange badge with the number of unread messages. Counts update live as messages arrive in channels the user is not currently viewing. Opening a channel clears the badge and persists the read position to the database so it survives a page refresh.
 
-**Office Hours pending badge:**
-- `GET /api/office-hours/pending-count` for instructors/TAs
-- `oh_request_created` socket event triggers instant badge update
-- Demo seed: "Alex Chen" student + pending OH request always present on dev login
+**Office Hours badge:** Instructors and TAs see a live badge on the Office Hours button showing the number of pending requests. The badge updates instantly when a student submits a new request, with a periodic fallback refresh.
+
+**Demo seed:** The dev login flow always ensures a sample student and pending request exist so the badge and pending-request workflow are immediately visible on first login.
 
 ---
 
 ### 2026-02-23 — Entry 007: Right-click context menus + channel leave/delete
 
-**Reusable `ContextMenu` component:**
-- Portaled into `document.body` — never clipped by scroll containers
-- Auto-clamps to viewport edges; dismisses on outside click or Escape
+A reusable context menu component was built — it renders outside scroll containers so it is never clipped, auto-clamps to the viewport, and dismisses on outside click or Escape.
 
-**Message right-click:** Edit / Delete (respects author/role permissions)
+**Messages:** Right-clicking shows Edit / Delete based on the user's permissions.
 
-**Channel right-click:**
-- Leave Channel (all roles) — inserts `channel_leaves (user_id, channel_id)`; channel hidden permanently for that user
-- Delete Channel (instructors/TAs, shown in red) — hard-deletes + cascades; emits `channel_deleted` socket event so it disappears from everyone's sidebar in real time
+**Channels:** Right-clicking a channel in the sidebar shows:
+- **Leave Channel** (all roles) — hides the channel from the user's sidebar permanently, persisted across refreshes.
+- **Delete Channel** (instructors/TAs, shown in red) — permanently deletes the channel and all its messages; disappears from everyone's sidebar in real time.
 
----
-
-### 2026-02-23 — Entry 008: Mobile-responsive layout
-
-- `useMediaQuery` hook — reactive wrapper around `window.matchMedia`
-- Breakpoint: 640px — sidebar collapses off-screen, slides in as fixed overlay with backdrop
-- Selecting a channel auto-closes the sidebar
-- `ChatWindow` mobile header: hamburger (☰) + `#channel-name`
-- `MessageInput` padding uses `env(safe-area-inset-bottom)` for iOS home indicator
-- `viewport-fit=cover` for notched devices
+The sidebar footer was also reorganized: user info on top, a full-width Office Hours button below with the pending badge.
 
 ---
 
-### 2026-02-23 — Entry 009: Dark mode toggle
+### 2026-02-23 — Entry 008: Bug fixes — server crash + stale sidebar
 
-- CSS custom properties on `<html>` via `data-theme` attribute — no CSS-in-JS library
-- `ThemeContext` reads `localStorage`, falls back to `prefers-color-scheme`; persists across reloads
-- Toggle button in sidebar footer: `"Dark"` / `"Light"`
-- All 13 component files migrated from hardcoded hex to `var(--color-xxx)` references
+**Server crash on channel delete:** If a channel was deleted while a user still had it open, the next "mark as read" request tried to write a database record referencing the now-deleted channel. The resulting constraint violation crashed the server. Fixed so the operation silently does nothing if the channel no longer exists.
 
----
-
-### 2026-02-24 — Entry 010: Typing indicators + online presence
-
-**Typing indicators:**
-- `typing_start` event now carries `name`; server forwards it in `user_typing` broadcast
-- `useTypingIndicator(channelId)` hook — auto-clears any user after 3s; returns `string[]` of names
-- `MessageInput` fires `typing_start/stop` on keystrokes (stops after 2s idle or on send)
-- `ChatWindow` shows animated triple-dot + "Alex is typing…" / "Several people are typing…" in a fixed 22px bar (no layout shift)
-
-**Online presence:**
-- `usePresence()` in `Chat.jsx`; `onlineIds: Set` passed to `ChannelList` + `ChatWindow`
-- Green dot on own avatar in sidebar footer
-- `• N online` count next to channel list header + in channel header
-- Green dot on sender avatar in message bubbles when that user is online
+**Stale sidebar after delete:** The client was waiting for a socket confirmation before removing a deleted channel from the sidebar. If the server had already crashed in the window above, that event never came and the UI stayed stale. Fixed by removing the channel from the local UI immediately when the delete is triggered, regardless of server timing.
 
 ---
 
-### 2026-02-24 — Entry 011: Emoji reactions, reply, forward, threads
+### 2026-02-23 — Entry 009: Mobile-responsive layout
 
-**Emoji reactions:**
-- Six reactions: 👍 👎 ❤️ 😂 ✅ ❓
-- Emoji picker on hover; reaction pills below bubble with emoji + count
-- `POST /api/messages/:id/reactions` — upserts/deletes from `message_reactions`; emits `reaction_updated` via socket
-
-**Unified hover action bar:**
-- Replaced right-click context menu with a hover action bar above the bubble
-- Buttons with tooltips: ☺ Reactions · ↩ Reply · ↗ Forward · ✏ Edit · ✕ Delete
-- Each button only renders if the user has the relevant permission
-
-**Reply (Slack/iPhone style):**
-- ↩ Reply sets `replyTo` in `ChatWindow`; reply banner shows in `MessageInput`
-- Reply is sent as a new main-feed message with a quote block above the bubble (accent bar + sender name + 100-char snippet)
-
-**Forward:**
-- ↗ Forward opens `ForwardModal` — channel picker; posts content to selected channel via REST
-
-**Thread backend:**
-- Migration `006_threads_replies.sql` adds `reply_to_id` + `thread_root_id` to `messages`
-- `thread_root_id IS NULL` keeps thread replies out of the main feed
-- `GET/POST /api/messages/:id/thread`; emits `new_thread_reply` + `thread_reply_count_updated`
+Below 640px the sidebar collapses off-screen and slides in as a full-height overlay. A backdrop dismisses it on tap. Selecting a channel closes the sidebar automatically. The chat window gains a top bar on mobile showing the channel name and a button to open the sidebar. The message input accounts for the home indicator on phones without a physical home button.
 
 ---
 
-### 2026-02-24 — Entry 012: Real-time bug fixes
+### 2026-02-23 — Entry 010: Dark mode toggle
 
-**Root bug — `req.io` always undefined:**
-- `req.io` middleware was registered *after* the API routes in `server/index.js`. Express runs middleware in order, so every route handler ran before `req.io` was set. Optional-chaining (`req.io?.emit`) silently swallowed all socket emissions.
-- Fix: declared `let _io = null` before route registration. Middleware captures it by closure reference; `_io = io` is assigned after Socket.io initialises.
-
-**Reactions now update live:**
-- `addReaction` / `removeReaction` now update local state immediately from the REST response — no longer reliant solely on the socket event. Socket event still fires for other clients.
-
-**Sent messages appear immediately:**
-- `sendMessage` now optimistically adds the message from the socket ack payload. `onNew` deduplicates by ID to prevent double-add from the broadcast.
+A toggle in the sidebar footer switches between light and dark themes. The preference is saved in the browser and respected on next load; if no preference exists, the operating system setting is used. All colors across every component use theme variables — the entire interface switches cleanly with no leftover hardcoded values.
 
 ---
 
-### 2026-02-24 — Entry 013: Emoji reaction redesign — accumulate counts, names, right-click remove
+### 2026-02-24 — Entry 011: Typing indicators + online presence
 
-Previous behavior toggled a reaction off on second click. The new model matches Slack:
+**Typing indicators:** When a user types in a channel, other members see an animated three-dot indicator and the name of who is typing. Multiple typers are listed by name up to two; three or more collapse to "Several people are typing…". The indicator clears automatically when typing stops. A reserved fixed-height bar prevents the message list from jumping when the indicator appears.
 
-**Behavior:**
-- **Left-click emoji picker** — always *adds*. Picker highlights emojis you've already added. Clicking an already-reacted emoji again is a no-op.
-- **Left-click reaction pill** — adds the reaction if you haven't yet; no-op if you have.
-- **Right-click reaction pill** — confirm prompt to remove *only your own* reaction. Count decrements by 1; other users' reactions are unaffected.
-- **Hover a pill** — tooltip lists every user who reacted (e.g. "Ian, Alex").
+**Online presence:** A green dot on the user's own avatar confirms they are connected. A live count of online users appears in the channel header and next to the channels list. Message bubbles show a green dot on the sender's avatar if they are currently online.
 
-**Backend:**
-- `POST /messages/:id/reactions` — add-only; skips duplicate insert
-- `DELETE /messages/:id/reactions/:emoji` — new endpoint; removes requesting user's reaction only; emits `reaction_updated`
-- `getReactions()` now JOINs `users` to return decrypted `names[]` alongside counts
-- `formatMessage()` decrypts `nameEncrypteds` from the SQL reactions subquery
+---
 
-**Frontend:**
-- `addReaction` + `removeReaction` replace `toggleReaction` in `api/index.js`
-- Both update local state from REST response immediately
-- `MessageBubble` pill/picker behavior as above; `onRemoveReact` threaded through `MessageList` + `ChatWindow`
+### 2026-02-24 — Entry 012: Emoji reactions, reply, forward, threads
+
+**Emoji reactions:** Six reactions are available (👍 👎 ❤️ 😂 ✅ ❓). A hover action bar on each message opens the emoji picker. Reactions appear as pills below the bubble with a count. The current user's reactions are highlighted. Reactions update live for everyone in the channel.
+
+**Hover action bar:** The previous right-click context menu for messages was replaced with a clean action bar that appears above the bubble on hover: Reactions, Reply, Forward, Edit, Delete. Buttons the user lacks permission to use are hidden entirely. Each button shows a tooltip label on hover.
+
+**Reply — Slack/iPhone style:** Clicking Reply opens the composer at the bottom of the screen. The reply appears as a new message in the main feed with a compact quote block above it showing the original sender's name and a snippet of their message.
+
+**Forward:** Opens a channel picker; confirming copies the message to the chosen channel.
+
+**Thread infrastructure:** The database was extended to support threaded replies as a distinct type separate from the main channel feed, with reply counts tracked and broadcast in real time.
+
+---
+
+### 2026-02-24 — Entry 013: Real-time bug fixes
+
+**Root bug — socket events never broadcast from REST handlers:**
+The middleware responsible for giving route handlers access to the real-time layer was registered in the wrong order during server startup. The web framework processes middleware in registration order, so every route handler was working with an uninitialized reference when it tried to send a socket event. The calls failed silently — the code appeared to run but nothing was ever sent. This was the root cause of reactions, edits, and deletes not appearing in real time for other users. Fixed by restructuring startup so the middleware is registered before the routes.
+
+**Reactions update live:** Now resolved by the root fix above. As a belt-and-suspenders measure, the reacting user's own view also updates immediately from the server's response rather than waiting for the socket broadcast.
+
+**Messages appear immediately for the sender:** Previously a sent message only appeared in the sender's own feed after the server broadcast it back — adding a noticeable delay. Fixed so the message is added from the server's immediate acknowledgement. Duplicate-prevention logic handles the case where the broadcast also arrives shortly after.
+
+---
+
+### 2026-02-24 — Entry 014: Emoji reaction redesign — accumulate counts, names, right-click remove
+
+The previous model toggled a reaction off on a second click. The new model matches Slack and most social platforms:
+
+- **Left-click the emoji picker** — always adds your reaction. The picker highlights emojis you have already used. Clicking one you have already added does nothing.
+- **Left-click a reaction pill** — adds that reaction if you have not yet reacted; does nothing if you have.
+- **Right-click a reaction pill** — prompts to remove your own reaction. If confirmed, your reaction is removed and the count drops by one. Other users' reactions are not affected.
+- **Hover a reaction pill** — a tooltip shows the names of everyone who reacted with that emoji.
+
+The server was updated to support add-only behavior, a new remove-my-reaction action, and to include reactor names in the data returned to clients. The client was updated to use separate add and remove actions that both update the local state immediately so the UI feels instant.
 
 ---
 
