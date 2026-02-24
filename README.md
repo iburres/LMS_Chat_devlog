@@ -8,7 +8,7 @@ Public development journal for **LMS Chat**, a student-instructor chat service b
 
 ## What is LMS Chat?
 
-A real-time chat tool that lives inside Canvas as an LTI 1.3 app. Students can talk to each other, ask instructors questions, request office hours, and search past answers — all scoped to their specific course.
+A channel-based real-time chat tool that lives inside Canvas as an LTI 1.3 app. Students can talk to each other, ask instructors questions, request office hours, and search past answers — all scoped to their specific course.
 
 **Key properties:**
 - LTI v1.3 + OAuth2 — launches directly from within Canvas
@@ -52,7 +52,7 @@ Full project scaffold from scratch. 41 files across server and client.
 - docker-compose: Postgres 16, Redis 7, MongoDB 7
 
 **Client highlights:**
-- Discord-inspired dark UI in React + Vite
+- Channel-based UI in React + Vite
 - Channel sidebar, live chat window, infinite scroll message history
 - Search overlay with ranked results scoped to the current course
 - Office hours request + scheduling UI (role-aware — instructors see all requests)
@@ -63,6 +63,12 @@ Full project scaffold from scratch. 41 files across server and client.
 - `npm install` both packages and get the dev environment running
 - Register a Canvas developer key and test the LTI launch flow end-to-end
 - UI polish pass
+
+---
+
+## Testing
+
+This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
 
 ---
 

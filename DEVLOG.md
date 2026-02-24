@@ -43,7 +43,7 @@ Added a dev-only login flow so we can work on the UI without Canvas:
 ## 2026-02-22 — Light theme + message edit/delete
 
 ### Light theme
-Replaced the Discord dark theme with a Canvas-compatible light theme:
+Replaced the default dark theme with a Canvas-compatible light theme:
 - Backgrounds: white sidebar, `#F5F7FA` main area
 - Text: `#1F2D3D` (dark navy-gray), `#6B7780` secondary, `#9EA7AD` muted
 - Accent: Canvas Orange `#E66000` — buttons, active channel highlight, own message bubbles, avatars
@@ -174,3 +174,129 @@ No other students can see the conversation (FERPA compliant — enforced at API 
 - `MessageInput` padding uses `env(safe-area-inset-bottom)` for iOS home indicator
 - `viewport-fit=cover` added to meta viewport for notched devices
 - `ChannelList.onSelect` now passes full `{id, name}` channel object so Chat.jsx can display the name in the mobile header without an extra query
+
+---
+
+## 2026-02-23 — Dark mode toggle
+
+### Approach
+CSS custom properties (`var()`) on the `<html>` element via a `data-theme` attribute — no CSS-in-JS library needed.
+
+### CSS variables (`client/index.html`)
+Defined on `:root` (light) and `[data-theme="dark"]` (override):
+- `--color-bg` / `--color-surface` / `--color-border`
+- `--color-text` / `--color-text-secondary` / `--color-text-muted`
+- `--color-accent` (Canvas Orange `#E66000` — unchanged in both themes)
+- `--color-accent-subtle` / `--color-accent-active`
+- `--color-bubble` (message bubble background)
+- `--color-danger`
+
+### ThemeContext (`client/src/context/ThemeContext.jsx`)
+- `ThemeProvider` reads `localStorage('lms-theme')`, falls back to `prefers-color-scheme`
+- Sets `document.documentElement.dataset.theme` on every change
+- Exposes `{ theme, toggle }` via `useTheme()` hook
+- Wrapped around `<AppProvider>` in `App.jsx`
+
+### Toggle button
+- Added to Chat.jsx sidebar footer (right side of user row)
+- Small text button: shows `"Dark"` in light mode, `"Light"` in dark mode
+- Preference persists across page reloads via localStorage
+
+### Components updated
+All inline `style` objects across 13 files migrated from hardcoded hex colors to `var()` references:
+`Chat`, `ChannelList`, `ChatWindow`, `MessageBubble`, `MessageInput`, `CreateChannelModal`, `SearchBar`, `ContextMenu`, `OHChatPanel`, `OfficeHours`, `DevLogin`, `App`
+
+### Notes
+- Status badge colors in `OfficeHours` (`pending`/`scheduled`/`completed`/`cancelled`) kept as hardcoded semantic colors — they are self-contained with their own bg+text pair and read well in both modes
+- White text on accent/danger buttons (`color: '#fff'`) kept as-is — white on orange is correct in both themes
+
+---
+
+## 2026-02-24 — Typing indicators + online presence dots
+
+### Typing indicators
+- **Server:** `typing_start` event now accepts `{ channelId, name }` and forwards `name` in the `user_typing` broadcast
+- **`useTypingIndicator(channelId)`** (new hook) — listens for `user_typing`/`user_stop_typing` for the active channel; auto-clears any user after 3s of no update; returns `string[]` of names currently typing
+- **`MessageInput`** — now accepts `channelId` prop; fires `typing_start { channelId, name }` on every keystroke (auto-stops after 2s idle or on send); imports `useApp` to read own display name
+- **`ChatWindow`** — shows a 22px typing bar below the message list: animated triple-dot + "Alex is typing…" / "Alex and Bob are typing…" / "Several people are typing…"; bar is always rendered (no layout shift)
+- **CSS animation** — `@keyframes typing-blink` added to `index.html`; `.typing-dot` class drives it (mix of class + inline styles, necessary for keyframes)
+
+### Online presence
+- **`usePresence()`** moved to `Chat.jsx` (was in `ChannelList`); `onlineIds: Set<userId>` passed as a prop to both `ChannelList` and `ChatWindow`
+- **Sidebar footer** — green dot (9px) overlaid on own avatar; confirms the user is connected
+- **Channel list** — small `• N` online count next to "CHANNELS" label
+- **Channel header** — `ChatWindow` now has a persistent header (desktop + mobile): `#channel-name` + `• N online` count; replaces the mobile-only header that was there before
+- **Message bubble avatars** — green dot (10px, white border) at bottom-right of sender avatar when that user is online; `isOnline` prop passed from `MessageList` → `MessageBubble`
+
+---
+
+## 2026-02-24 — Emoji reactions, message action bar, reply, forward, threads
+
+### Emoji reactions
+- Six supported reactions: 👍 👎 ❤️ 😂 ✅ ❓
+- Emoji picker opens from the ☺ action button on hover; clicking an emoji toggles the reaction for the current user
+- Reaction pills appear below the bubble showing emoji + count; clicking a pill toggles the same reaction
+- A pill highlights in accent color when the current user has reacted; otherwise neutral border style
+- Server: `POST /api/messages/:messageId/reactions` — upserts or deletes from `message_reactions`; returns full recalculated reaction array; emits `reaction_updated` via socket to the channel room
+- Client: `reaction_updated` socket event updates the affected message in state without a full refetch
+
+### Message action bar redesign
+- Removed right-click context menu for messages; replaced with a unified hover action bar
+- Action bar appears at top-right of the bubble on hover (opacity transition, no layout shift)
+- Buttons with tooltip-on-hover: ☺ Reactions · ↩ Reply · ↗ Forward · ✏ Edit · ✕ Delete
+- Each button only renders if the user has the relevant permission (edit/delete gated by author or instructor/TA role)
+- `ActionBtn` wrapper component handles tooltip state independently per button
+
+### Reply
+- Clicking ↩ sets `replyTo` state in `ChatWindow`
+- `MessageInput` shows a reply banner above the text field: accent-colored left bar + sender name + 60-char snippet; ✕ dismisses
+- On send, `replyToId` is passed to the `send_message` socket event
+- Socket handler validates the referenced message belongs to the same channel; populates full `replyTo` shape (`id`, `content`, `senderName`) in the emitted payload
+- Reply appears as a new message in the main feed with a quote block above the bubble: accent vertical bar + **sender name** + up to 100-char content snippet
+
+### Forward
+- ↗ Forward opens `ForwardModal` — a channel picker listing all channels the user can post to
+- Selecting a channel and confirming posts the message content to that channel via REST (`POST /api/channels/:id/messages`)
+- Modal closes on success or on clicking outside / pressing Escape
+
+### Reply in thread (backend)
+- Migration `006_threads_replies.sql` adds `reply_to_id` and `thread_root_id` columns to `messages`
+- `thread_root_id IS NULL` filter keeps thread replies out of the main channel feed
+- `GET /api/messages/:id/thread` — returns thread replies in ascending order
+- `POST /api/messages/:id/thread` — inserts a thread reply; emits `new_thread_reply` (for thread panel viewers) and `thread_reply_count_updated` (for main feed counter) via socket
+
+---
+
+## 2026-02-24 — Reply system redesign + real-time bug fixes
+
+### Reply system — Slack/iPhone style
+Changed reply UX to match familiar patterns from Slack and iPhone Messages:
+- Clicking ↩ Reply on any message opens the reply composer at the bottom of the screen (not inline)
+- The sent reply appears as a **new message in the main feed**, not in a nested thread
+- Above the reply's own bubble, a compact quote block shows who was being replied to and a snippet of their original message — the original message is not reposted in full
+- Removed the inline "Reply in thread" sub-feed from bubbles; thread backend remains intact
+
+### Action bar repositioned (above bubble)
+- Action bar now floats **above** the bubble (`position: absolute; top: -30px; right: 0`) rather than below it
+- Removed `paddingBottom: 34` that was previously reserved to prevent layout shift — no longer needed with the above-bubble placement
+- Reaction pills now sit directly below the bubble with only a 2px gap (previously appeared 1–2 lines too low due to the reserved padding)
+
+### Real-time bug: `req.io` always undefined
+- **Root cause:** `req.io` middleware was registered at line 98 of `server/index.js`, after the API routes were mounted at line 75. Express executes middleware in registration order, so every route handler ran before `req.io` was ever set — it was always `undefined`. The optional-chaining `req.io?.emit(...)` silently swallowed the call, meaning no reaction or edit/delete socket events were ever broadcast from REST handlers.
+- **Fix:** Declared `let _io = null` before the routes. The middleware (`req.io = _io`) is now registered before the routes. After Socket.io initialises, `_io = io` is assigned. The closure captures `_io` by reference, so all subsequent requests resolve to the real `io` instance.
+- **Files:** `server/index.js`
+
+### Real-time: reactions now update live
+- `toggleReaction` in `useMessages.js` previously only emitted a REST call and relied entirely on the `reaction_updated` socket event for the state update (which never fired due to the `req.io` bug above)
+- **Fix (belt-and-suspenders):** `toggleReaction` now also updates local state immediately from the REST response — the returned `reactions` array (fully recalculated server-side) is applied via `setMessages` without waiting for a socket event. The socket event still fires for other users in the channel.
+
+### Real-time: sent messages now appear immediately
+- `sendMessage` previously emitted the `send_message` socket event and waited for the `new_message` broadcast to bounce back from the server before the message appeared in the sender's feed
+- **Fix:** `sendMessage` now optimistically adds the message to state from the socket ack payload the moment the server acknowledges it. The `onNew` socket handler deduplicates by message ID so the message is not added twice if the broadcast also arrives.
+- **Files:** `client/src/hooks/useMessages.js`
+
+---
+
+## Testing
+
+This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
