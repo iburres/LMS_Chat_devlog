@@ -8,7 +8,7 @@ Public development journal for **LMS Chat**, a student-instructor chat service b
 
 ## What is LMS Chat?
 
-A Discord-style real-time chat tool that lives inside Canvas as an LTI 1.3 app. Students can talk to each other, ask instructors questions, request office hours, and search past answers — all scoped to their specific course.
+A real-time chat tool that lives inside Canvas as an LTI 1.3 app. Students can talk to each other, ask instructors questions, request office hours, and search past answers — all scoped to their specific course.
 
 **Key properties:**
 - LTI v1.3 + OAuth2 — launches directly from within Canvas
