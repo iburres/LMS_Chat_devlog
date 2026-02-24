@@ -249,6 +249,12 @@ The developer login screen now shows two one-click buttons at the top: "Ian Burr
 
 ---
 
+## 2026-02-24 — Logout button
+
+A logout button was added to the sidebar footer, next to the theme toggle. Clicking it ends the current session on the server and redirects to the login screen. This makes it straightforward to switch between test accounts during development without needing a separate browser window.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.

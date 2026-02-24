@@ -192,6 +192,12 @@ A thin divider separates the reaction buttons from the action buttons (Reply, Fo
 
 ---
 
+### 2026-02-24 — Entry 016: Logout button
+
+A logout button was added to the sidebar footer next to the theme toggle. Clicking it ends the current session and redirects to the login screen. This makes switching between test accounts straightforward during development without needing a separate browser window.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
