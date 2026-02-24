@@ -297,6 +297,34 @@ Changed reply UX to match familiar patterns from Slack and iPhone Messages:
 
 ---
 
+## 2026-02-24 — Emoji reaction redesign: accumulate counts, names, right-click remove
+
+### Reaction behavior (left-click adds, right-click removes)
+Previous behavior toggled a reaction on/off with a single click. The new model matches how reactions work in Slack and social apps:
+
+- **Left-click on the emoji picker** — always *adds* a reaction. If the user has already reacted with that emoji the button is visually highlighted in the picker, but clicking it again is a no-op (server skips duplicate insert).
+- **Left-click on a reaction pill** — adds the same emoji if the user has not yet reacted; does nothing if they already have.
+- **Right-click on a reaction pill** — shows a browser confirm dialog ("Remove your 👍 reaction?"). If confirmed, removes only the current user's own reaction and decrements the count by 1. Other users' reactions are unaffected.
+
+### Cumulative count + who reacted
+- Each reaction pill shows `{emoji} {count}`, where count reflects every user who has clicked that emoji on the message.
+- Hovering a pill shows a tooltip listing the names of everyone who reacted (e.g. "Ian, Alex").
+- The emoji picker highlights emojis the current user has already added (accent background).
+
+### Backend changes
+- **`POST /messages/:id/reactions`** — changed from toggle to add-only; skips the insert if the `(user_id, message_id, emoji)` row already exists.
+- **`DELETE /messages/:id/reactions/:emoji`** — new endpoint; removes only the requesting user's reaction for that emoji; emits `reaction_updated` via Socket.io so all clients update in real time.
+- **`getReactions()`** — now JOINs the `users` table to aggregate encrypted name values alongside `user_id` and `count`. Names are decrypted server-side before being returned.
+- **`formatMessage()`** — updated to decrypt `nameEncrypteds` returned from the inline SQL reactions subquery, producing a `names[]` array on every message's reactions.
+
+### Frontend changes
+- `api/index.js`: `toggleReaction` replaced by `addReaction` (POST) and `removeReaction` (DELETE with `encodeURIComponent` on the emoji).
+- `useMessages.js`: both functions update local state immediately from the REST response (belt-and-suspenders alongside the socket event).
+- `MessageBubble.jsx`: pill click/right-click behavior as described above; emoji picker highlights already-reacted emojis; reaction pill tooltip shows comma-joined names.
+- `MessageList.jsx` + `ChatWindow.jsx`: `onRemoveReact` prop threaded through to bubbles.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
