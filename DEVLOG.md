@@ -255,6 +255,16 @@ A logout button was added to the sidebar footer, next to the theme toggle. Click
 
 ---
 
+## 2026-02-25 — Pinned messages
+
+Instructors and TAs can pin any message in a channel. A pin button appears in the message action bar when hovering — only visible to those with permission to pin.
+
+Once a message is pinned, a 📌 badge appears in the channel header showing how many messages are pinned. Clicking it opens a side panel listing all pinned messages for that channel, each showing the sender, date, and content. Instructors and TAs see an Unpin button on each entry.
+
+Pin and unpin actions update in real time for all users in the channel — the badge count and panel list reflect the change instantly without a page reload. Both actions are recorded in the audit log for FERPA compliance.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
