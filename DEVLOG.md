@@ -265,6 +265,22 @@ Pin and unpin actions update in real time for all users in the channel — the b
 
 ---
 
+## 2026-02-25 — Reaction bar improvements + skin tone support
+
+### Bug fix
+The "job well done" hands emoji and several emojis in the additional reactions picker (surprised, sad) were silently rejected by the server and never recorded. The server's allowed list was too narrow. All missing emoji are now accepted.
+
+### Skin tone picker
+Clicking the raised hands, thumbs up, or thumbs down emoji now opens a small three-option picker showing the default (yellow), medium, and dark skin tone variants. The user picks the shade that represents them, and that variant is stored as their reaction. The button remembers and displays whichever tone they chose.
+
+### New direct reaction buttons
+Heart, checkmark, and smile are now single-click buttons in the action bar alongside the hands and thumbs, so the most common reactions are always one tap away.
+
+### Additional reactions picker
+Trimmed to less-common emoji only (laughing, surprised, sad, question mark), since the most common reactions are now direct buttons.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
