@@ -220,6 +220,16 @@ Pin and unpin actions update in real time for all users in the channel without a
 
 ---
 
+### 2026-02-25 — Entry 019: Global skin tone selector + expanded emoji picker
+
+Users can now set a preferred skin tone once, and it applies automatically to all hand and gesture reactions — the raised hands, thumbs up, thumbs down, and every gesture emoji in the picker will use the selected shade.
+
+The "More reactions" picker is now a proper scrollable panel organized into three sections: Gestures (24 hand and gesture emoji shown with the selected tone), Faces (22 emoji), and Hearts & Symbols (22 emoji). A row of six colored circles at the bottom of the panel lets the user pick from the default yellow through light, medium-light, medium, medium-dark, and dark skin tones. The preference is saved and restored automatically.
+
+The server's allowed emoji list was expanded to match, covering all skin tone variants of every gesture emoji plus the full face and symbol sets.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.

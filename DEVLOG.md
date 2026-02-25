@@ -281,6 +281,21 @@ Trimmed to less-common emoji only (laughing, surprised, sad, question mark), sin
 
 ---
 
+## 2026-02-25 — Global skin tone selector + expanded emoji picker
+
+### Global skin tone preference
+Users can now choose a skin tone once and have it apply automatically to all hand and gesture reactions. The preference is saved in the browser and restored on future visits. Clicking the raised hands, thumbs up, or thumbs down in the action bar immediately reacts with the chosen shade — no per-button picker needed.
+
+### Expanded emoji picker
+The additional reactions picker is now a proper scrollable panel (instead of a small horizontal strip) organized into three labeled sections: Gestures, Faces, and Hearts & Symbols. The Gestures section contains 24 hand and gesture emoji, all shown with the currently selected skin tone. The Faces section contains 22 emoji. Hearts & Symbols contains 22 entries including fire, trophy, graduation cap, and others.
+
+At the bottom of the panel, six colored circles represent the six skin tone options (default yellow through dark). Clicking a circle applies the tone immediately and saves it. Gesture emoji in the picker update to reflect the new choice right away.
+
+### Server
+The allowed emoji list was expanded to cover all 26 skin-tone-eligible gesture emoji with all five Fitzpatrick modifier variants, plus the full face and symbol sets.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
