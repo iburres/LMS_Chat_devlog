@@ -220,6 +220,12 @@ Pin and unpin actions update in real time for all users in the channel without a
 
 ---
 
+### 2026-02-25 — Entry 020: Direct messages
+
+Any two people in the same course can now have a private one-on-one conversation. A "Direct Messages" section in the sidebar lists all active threads with unread badges. A compose button opens a searchable participant picker. Clicking any sender's name in a channel also opens a DM instantly. Messages arrive in real time with typing indicators. Strictly course-scoped and FERPA-compliant.
+
+---
+
 ### 2026-02-25 — Entry 019: Global skin tone selector + expanded emoji picker
 
 Users can now set a preferred skin tone once, and it applies automatically to all hand and gesture reactions — the raised hands, thumbs up, thumbs down, and every gesture emoji in the picker will use the selected shade.

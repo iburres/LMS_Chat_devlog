@@ -296,6 +296,26 @@ The allowed emoji list was expanded to cover all 26 skin-tone-eligible gesture e
 
 ---
 
+### 2026-02-25 — Entry 020: Direct messages
+
+Any two people in the same course can now have a private one-on-one conversation.
+
+**How it works:**
+- A new "Direct Messages" section appears in the sidebar below the channel list.
+- Each thread shows the other person's name and a badge with the unread count.
+- A compose button at the top of the section opens a searchable participant picker — find any student, TA, or instructor by name and click to open a conversation.
+- Starting a conversation a second time reopens the existing thread rather than creating a duplicate.
+
+**Clicking names:** A sender's name on any message bubble is now clickable. Clicking it instantly opens a direct message with that person without going through the picker.
+
+**Real-time:** Messages arrive immediately for both participants. A typing indicator shows when the other person is writing. The sidebar thread list reorders itself with the most recently active thread at the top, and unread badges update live.
+
+**Scope and privacy:** DMs are strictly scoped to a single course — a student cannot message someone from a different course even if they share the same platform. Access is enforced on both the API and the real-time socket layer. Both create and delete actions are logged for FERPA compliance.
+
+**Soft delete:** Senders can delete their own messages. Records remain in the database for the audit trail but are hidden from both participants.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
