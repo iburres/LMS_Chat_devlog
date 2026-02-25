@@ -296,6 +296,18 @@ The allowed emoji list was expanded to cover all 26 skin-tone-eligible gesture e
 
 ---
 
+## 2026-02-25 — Direct message bug fixes
+
+### Real-time delivery
+- **Root cause:** When Alex sent a message to Ian, Alex's browser was subscribed to that DM conversation's live channel (because Alex had the DM window open). Ian's browser was not — it only subscribed when Ian manually opened the DM window. Any message sent while Ian had the window closed was silently dropped.
+- **Fix:** Each user's connection now automatically subscribes to all of their existing DM conversations the moment they connect to the app. When a brand-new conversation is created, both participants' connections are subscribed to it immediately — without either person needing to open the window first. The unsubscribe event that fires when a DM window is closed is now a no-op, so the subscription persists for the full session and sidebar unread badges stay current.
+
+### Button interaction bug
+- **Root cause:** The buttons in the Direct Messages sidebar section did not declare their element type. In HTML, an undeclared button defaults to "submit" behavior, which can cause it to trigger a nearby form (in this case, the search bar's form) instead of its own click handler.
+- **Fix:** All buttons in the DM sidebar and participant picker now explicitly declare themselves as action buttons, not form-submit triggers.
+
+---
+
 ### 2026-02-25 — Entry 020: Direct messages
 
 Any two people in the same course can now have a private one-on-one conversation.

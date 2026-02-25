@@ -220,6 +220,14 @@ Pin and unpin actions update in real time for all users in the channel without a
 
 ---
 
+### 2026-02-25 — Entry 021: Direct message bug fixes
+
+**Real-time delivery:** Messages sent in a direct conversation now appear instantly for the recipient regardless of whether they have that conversation open. Previously, a message only reached the other person if they happened to have the DM window active at the moment it was sent — if it was closed, the message was lost until a page refresh. The fix: each user's connection now automatically subscribes to all of their existing DM conversations at startup, and both participants are subscribed to a brand-new conversation the instant it is created.
+
+**Button interaction bug:** Clicking on a person in the Direct Messages section of the sidebar was occasionally triggering the page's search form instead of opening the conversation. This was caused by the DM buttons not declaring their type explicitly — browsers can treat undeclared buttons as form-submit triggers under certain conditions. All DM buttons now have their type set correctly.
+
+---
+
 ### 2026-02-25 — Entry 020: Direct messages
 
 Any two people in the same course can now have a private one-on-one conversation. A "Direct Messages" section in the sidebar lists all active threads with unread badges. A compose button opens a searchable participant picker. Clicking any sender's name in a channel also opens a DM instantly. Messages arrive in real time with typing indicators. Strictly course-scoped and FERPA-compliant.
