@@ -244,6 +244,12 @@ The server's allowed emoji list was expanded to match, covering all skin tone va
 
 ---
 
+### 2026-02-25 — Entry 022: Codebase documentation pass
+
+Every one of the 55 server and client source files now has a detailed block comment at the top describing what it does, which database tables and REST endpoints it touches, and any FERPA-relevant considerations. Every function, component, and hook has a comment explaining its purpose and key logic. Inline comments cover non-obvious implementation details — pagination cursors, real-time deduplication, socket room membership, encrypted PII handling, and role-based permission checks. No runtime behavior was changed.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.

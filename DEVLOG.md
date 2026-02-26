@@ -328,6 +328,20 @@ Any two people in the same course can now have a private one-on-one conversation
 
 ---
 
+## 2026-02-25 — Codebase documentation pass
+
+Added comprehensive inline documentation to all 55 server and client source files. No runtime behavior was changed — this was purely a documentation effort to make the codebase easier to navigate and understand.
+
+**What was documented:**
+
+Every file now opens with a block comment that describes its purpose, which database tables it reads or writes, which REST endpoints or real-time socket events it interacts with, and any FERPA-relevant notes (encryption, audit logging, access control).
+
+Every exported function, React component, custom hook, and helper now has a comment above it explaining what it does, what parameters it expects, what it returns, and any important side effects.
+
+Inside function bodies, inline comments were added wherever the logic is not self-evident. This includes the cursor-based message pagination strategy, how duplicate-prevention works when a message arrives via both a direct acknowledgement and a broadcast, the socket room membership system (how users are automatically subscribed to their existing DM threads on connect), how AES-256-GCM decryption is applied to name and email fields before data is returned to the client, how role-based permission checks drive different UI in message action bars and channel controls, and how the skin-tone modifier system for emoji reactions works.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
