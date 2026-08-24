@@ -342,6 +342,28 @@ Inside function bodies, inline comments were added wherever the logic is not sel
 
 ---
 
+## 2026-08-24 — Maintenance check-in + security patch
+
+Picked the project back up after a pause. The goal for the session was to restore the local development environment, confirm the most recently built feature still works, and make sure we are on current security patches.
+
+### Environment restored
+
+All backing services were brought back up and came online healthy. The server dependencies had to be reinstalled, and the full database schema re-applied from scratch without errors. The server started cleanly and reported healthy.
+
+### Direct messaging verified
+
+Ran a full end-to-end check of the private one-on-one messaging feature — the last thing built before the pause, and the one that had been mid-debugging. Simulated two people in the same course exchanging messages and confirmed that messages are delivered live in both directions, that conversation history is stored and read back correctly, and that unread badges increment for the recipient. Everything passed.
+
+### Security patch
+
+A dependency audit flagged a high-severity advisory in the low-level networking library underneath the real-time messaging layer — a memory-disclosure issue plus a denial-of-service risk. Applied the non-breaking update on both the server and the browser app. This resolved the high-severity finding and the large majority of the other outstanding advisories in one pass. The real-time messaging check was re-run on the patched code and still passed, confirming no regression.
+
+### Services already current
+
+The three backing databases were verified to already be running the latest maintenance releases within their pinned major versions, so no action was needed there. A small number of remaining advisories require larger framework major-version jumps; these were deferred to be handled individually as tested upgrades rather than bundled into this maintenance pass.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.

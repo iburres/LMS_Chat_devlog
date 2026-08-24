@@ -250,6 +250,16 @@ Every one of the 55 server and client source files now has a detailed block comm
 
 ---
 
+### 2026-08-24 — Entry 023: Maintenance check-in + security patch
+
+Returned to the project after a pause to bring the local environment back to life and verify everything still works. All backing services were restarted and the database schema re-applied cleanly from scratch. A full end-to-end check of the private direct-messaging feature confirmed that live two-way delivery, message history, and unread badges all behave correctly.
+
+A routine dependency audit surfaced a high-severity issue in the low-level networking library that powers real-time messaging (a memory-disclosure and denial-of-service advisory). Applied the non-breaking security update on both the server and the browser app, which cleared the high-severity finding and the large majority of the outstanding advisories. The real-time messaging check was re-run afterward and still passed, confirming the update introduced no regressions.
+
+The backing databases were confirmed to already be on the latest maintenance releases of their current major versions. A handful of remaining advisories require larger framework version jumps and were deferred as separate, individually-tested upgrades.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
