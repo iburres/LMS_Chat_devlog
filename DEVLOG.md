@@ -364,6 +364,26 @@ The three backing databases were verified to already be running the latest maint
 
 ---
 
+## 2026-08-24 — Continuous integration pipeline
+
+Introduced the project's first automated verification pipeline, so that every proposed change is checked in the cloud before it can be merged.
+
+### What it does
+
+On every proposed change (and on anything landing in the main line), an automated run brings up fresh, disposable copies of all three backing services, builds the front-end to catch any build breakage, applies the database schema from scratch, starts the server, and waits for it to report healthy. It then executes an automated end-to-end test that simulates two people in the same course holding a private conversation, asserting that messages are delivered live in both directions, that history is stored and read back correctly, and that unread badges increment for the recipient. If any of these steps fail, the change is blocked from merging.
+
+A dependency security scan also runs on each change. It is reported for visibility but intentionally does not block merging, because a few known larger upgrades are still pending and would otherwise wall off unrelated work.
+
+### Why
+
+The prior session flagged that there was no automated gate, which made a "merge only when green" policy meaningless. This pipeline provides that gate: proposed changes now pass a real verification run rather than a manual spot-check.
+
+### Process
+
+This was also the first change developed under the newly agreed working loop — branch, build, test until it passes, open a proposal, and merge only once the automated check goes green. The pipeline itself was validated end to end locally (against freshly reset services) before it was proposed, and then merged after its own check passed in the cloud.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.

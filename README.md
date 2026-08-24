@@ -260,6 +260,16 @@ The backing databases were confirmed to already be on the latest maintenance rel
 
 ---
 
+### 2026-08-24 — Entry 024: Continuous integration pipeline
+
+Set up an automated check that now runs on every proposed change before it can be merged. When a change is opened, a fresh, throwaway copy of all three backing services is spun up in the cloud, the front-end is built to catch any breakage, the database schema is applied from scratch, the server is started, and an automated end-to-end test simulates two people in the same course exchanging private messages — confirming live two-way delivery, stored history, and unread badges all still work. A change cannot be merged unless this check passes.
+
+A dependency security scan also runs on every change and is reported for visibility, without blocking merges, so that known larger upgrades still pending don't wall off unrelated work.
+
+This closes a gap from the previous session: proposed changes now have a real automated gate to pass, so "merge once it's green" is backed by an actual verification run rather than a manual spot-check. The new pipeline was validated end to end before landing.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
