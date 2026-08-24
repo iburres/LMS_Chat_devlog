@@ -270,6 +270,16 @@ This closes a gap from the previous session: proposed changes now have a real au
 
 ---
 
+### 2026-08-24 — Entry 025: Hardening how encrypted personal data is read
+
+Made the app resilient to an unreadable personal-data record. Student names and emails are stored encrypted, and previously, if the app ever encountered a record it couldn't decrypt — for example after an encryption-key change, or from a corrupted or tampered record — the failure could take the whole server down, turning a single bad record into an outage for everyone.
+
+Now such a record degrades gracefully: the affected name simply shows as unavailable (the interface already falls back to a neutral placeholder avatar), the event is recorded in the server logs for the operators to investigate, and the server keeps running normally for everyone else. The diagnostic that gets logged deliberately contains no personal data.
+
+Added an automated test suite covering this behavior — confirming normal encryption still round-trips correctly, and that malformed, corrupted, or tampered records now return the safe placeholder instead of crashing. This suite was added to the automated pre-merge checks so the protection can't silently regress later.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.

@@ -384,6 +384,26 @@ This was also the first change developed under the newly agreed working loop —
 
 ---
 
+## 2026-08-24 — Hardening how encrypted personal data is read
+
+Closed a resilience gap found while building the CI pipeline: an unreadable personal-data record could crash the whole server.
+
+### The problem
+
+Student names and emails are stored encrypted at rest. When the app reads one back, it decrypts it. If decryption failed — because the record was written under a different encryption key, or was corrupted or tampered with — the error was not being contained. Because these reads happen while assembling responses, an uncontained failure could bring down the entire server process. In effect, one bad record could cause an outage for every user, not just the person whose record was affected.
+
+### The fix
+
+Reading encrypted personal data now fails safe. If a record cannot be decrypted, the affected name is treated as simply unavailable — the interface already shows a neutral placeholder avatar in that case — and the server continues serving everyone else normally. The failure is written to the server logs so operators can spot and investigate a key or data problem, and that log entry is deliberately free of any personal data. Callers can also specify a custom placeholder where a more descriptive label makes sense.
+
+### Verification
+
+Added a small, self-contained automated test suite for the encryption helpers. It confirms that ordinary values still encrypt and decrypt correctly (including international characters), that empty values are handled, that repeated encryptions of the same value produce different stored output, and — the core of this change — that malformed, corrupted, and truncated records now return the safe placeholder rather than throwing. This suite was added to the automated pre-merge checks, so a future change can't silently reintroduce the crash.
+
+The full pipeline was run locally against freshly reset services before proposing — encryption tests, front-end build, database setup, and the two-person real-time messaging test all passed — and the change was merged only after the automated check passed in the cloud.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
