@@ -296,6 +296,14 @@ Conflict-of-interest rules are built in. The chair and co-chair can review every
 
 ---
 
+### 2026-11-02 — Entry 028: Privacy notice at launch and message reporting
+
+Every user now sees a privacy notice before using the app. It explains that messages, including private and deleted ones, are stored by the department and may be reviewed under UTSA policy. The app records who acknowledged each version, and changing the wording prompts everyone again.
+
+Anyone can now report a message, with a reason and optional details, and a copy of the message is kept with the report. Channel reports go to the course's instructors and TAs and to the department's reviewers. Private-message reports go only to the department, since instructors can't see private messages. Reviewers mark reports as reviewed or dismissed, and every step is recorded in the audit trail. An automated test covering the notice, reporting and routing rules runs on every proposed change.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.

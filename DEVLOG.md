@@ -451,6 +451,46 @@ One limit, noted for the compliance answers: anyone with direct access to the se
 
 ---
 
+## 2026-11-02 — Privacy notice at launch and message reporting
+
+Two features committed to in the UTSA compliance answers: telling every user up front that their messages are stored and may be reviewed, and letting anyone report a message that concerns them.
+
+### Privacy notice
+
+The first time someone opens the app, and again whenever the wording changes, they see a notice before they can do anything else. It explains that:
+
+- all messages are stored by the department, including private messages, office-hours chats, and messages that were edited or deleted;
+- authorized department administrators may review or retrieve them under UTSA policy, for example for a records request, a report, an investigation, or records-retention requirements;
+- instructors cannot read private messages between students.
+
+It links to UTSA's records policy. The app records who acknowledged which version of the notice and when, so the department can show that every user was informed. The wording is kept in a single place on the server, and changing it prompts everyone to acknowledge it again. Anyone can re-read it from the sidebar.
+
+### Reporting a message
+
+Every message from someone else now has a Report option. The reporter picks a reason (harassment, inappropriate content, not course-related, spam, or other) and can add details. A copy of the message is saved with the report, so later edits or deletions don't change what was reported.
+
+Where a report goes depends on where the message was:
+
+- **Course channels:** to the course's instructors and TAs, who already moderate channels. They get a new Reported Messages page with a live count in the sidebar. The report also goes to the department's reviewers.
+- **Private messages:** to the department's reviewers only. Instructors can't see private messages, so they don't see reports of them either.
+
+Reviewers mark each report as reviewed or dismissed, with an optional note on what was done. Reports of private messages appear only on the department's Audit Review page, where the administrator's conflict-of-interest rule still applies. Reporting, viewing and resolving reports are all recorded in the audit trail.
+
+### Verification
+
+A new automated test covers the whole flow:
+
+- a new user has to acknowledge the notice, and an outdated version is rejected;
+- duplicate reports, reports of your own message, and reports by someone outside the conversation are refused;
+- instructors see channel reports but never private-message reports;
+- a reported message keeps its original text after being edited;
+- the chair sees both kinds, and the administrator is still blocked from his own course;
+- every step is logged.
+
+The feature was also checked in a browser end to end. The change was merged only after the automated check passed in the cloud. The notice wording still needs approval from UTSA compliance before the pilot.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
