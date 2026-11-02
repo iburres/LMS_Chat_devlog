@@ -404,6 +404,24 @@ The full pipeline was run locally against freshly reset services before proposin
 
 ---
 
+## 2026-11-02 — Closing gaps in the privacy audit trail
+
+Found while answering UTSA compliance questions about records retrieval and audit-log review: two everyday actions were not being written to the audit trail.
+
+### The problem
+
+The app keeps a privacy audit trail of who did what, in which course, and when. But the most common action of all, sending a message, was only recorded when it went through a secondary path that the browser rarely uses. Messages sent the normal way, over the live real-time connection, both in course channels and in private direct messages, left no audit entry. Separately, opening the app from Canvas (effectively the app's login) was not recorded at all. That would have left a hole in any access report the university asked for.
+
+### The fix
+
+Recording an audit entry is now a shared capability that every part of the server can use, not just the standard request handlers. Messages sent over the live connection now produce the same audit entries as the secondary path, so every message is accounted for however it was sent. Each launch from Canvas is now recorded too, along with the role the person launched as. The developer-only test login is recorded the same way, so automated tests exercise the same trail.
+
+### Verification
+
+The automated two-person messaging test was extended. It now sends a channel message and a private message over the live connection, then checks the audit trail for the login and for both messages. As a check that the test can actually catch the problem, it was also run with the fix removed and correctly failed. With the fix in place, all checks pass, along with the existing encryption tests. The change was merged only after the automated check passed in the cloud.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.

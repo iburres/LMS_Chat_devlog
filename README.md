@@ -280,6 +280,14 @@ Added an automated test suite covering this behavior — confirming normal encry
 
 ---
 
+### 2026-11-02 — Entry 026: Closing gaps in the privacy audit trail
+
+While preparing answers to UTSA's compliance questions, found that two everyday actions were missing from the privacy audit trail. Messages sent the normal way, over the live real-time connection, were not being recorded, and neither was opening the app from Canvas. Both are now recorded: every channel message and private message is logged however it was sent, and each Canvas launch is logged along with the role the person launched as.
+
+The automated two-person messaging test now sends messages over the live connection and confirms the matching audit entries exist. It was also confirmed to fail when the fix is removed, so it guards against this gap coming back.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
