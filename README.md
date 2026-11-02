@@ -288,6 +288,14 @@ The automated two-person messaging test now sends messages over the live connect
 
 ---
 
+### 2026-11-02 — Entry 027: Audit review with separation of duties
+
+Added an Audit Review page for the department chair, co-chair and app administrator. Reviewers can filter the privacy audit trail by course, activity type and date, and export every record for a course to answer a records request, including deleted messages and the original text of edited ones.
+
+Conflict-of-interest rules are built in. The chair and co-chair can review every course. The administrator can review every course except ones they belong to, which is automatic and can't be lifted, and any the chair or co-chair restrict. Every review, export, restriction change and denied attempt is itself recorded, so the chair and co-chair can see exactly what the administrator accessed. An automated test covering all of these rules now runs on every proposed change.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.

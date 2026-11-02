@@ -422,6 +422,35 @@ The automated two-person messaging test was extended. It now sends a channel mes
 
 ---
 
+## 2026-11-02 — Audit review with separation of duties
+
+Built the tools the department needs to review the privacy audit trail and answer records requests, with a conflict-of-interest rule built in.
+
+### Who can do what
+
+The department owns the app and its records; Ian maintains and administers it. Two kinds of reviewer access now exist, both granted by the server's configuration rather than by anyone's Canvas role:
+
+- **Department chair and co-chair:** can review activity and export records for every course, and decide which courses the administrator must stay out of.
+- **Administrator:** has the same tools for every course *except* courses they belong to in any role (teaching, assisting or enrolled), plus any course the chair or co-chair has added to a restriction list. The list covers courses the administrator teaches but hasn't opened the app from yet. The automatic block cannot be lifted by anyone. Activity that isn't tied to a course is visible only to the chair and co-chair.
+
+Access is re-checked on every request, so removing someone from the configuration takes effect immediately.
+
+### Accountability for the reviewers
+
+Every review, every export and every change to the restriction list is itself recorded in the audit trail, filed under the course concerned. So is every attempt to open a course the reviewer isn't allowed to see. The chair and co-chair can therefore see exactly what the administrator looked at, or tried to.
+
+### The review page
+
+A new Audit Review page, linked only for these three people, lets a reviewer filter activity by course, type and date range, and page back through history. For a records request, it can export everything for one course in one file: members, channel messages, private messages, office-hours conversations, messages that were deleted, and the original text of any that were edited.
+
+### Verification
+
+A new automated test sets up three courses with an administrator, a chair and a student, and checks every rule above: the automatic block, the chair's unrestricted access, adding and removing a restriction, that denied attempts reach the chair, and that reviewer activity is logged. It runs on every proposed change alongside the existing checks. The page itself was also checked in a browser at desktop and phone widths. The change was merged only after the automated check passed in the cloud.
+
+One limit, noted for the compliance answers: anyone with direct access to the server's database sits outside these rules. That is covered by database-level logging that the chair and co-chair review, not by the app itself.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
