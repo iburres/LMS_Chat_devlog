@@ -491,6 +491,52 @@ The feature was also checked in a browser end to end. The change was merged only
 
 ---
 
+## 2026-11-02 — Automatic security alerts from the audit trail
+
+The audit trail records everything, but someone still has to notice when something looks wrong. The app now watches the trail itself and raises alerts for reviewers to handle, which strengthens the answer to UTSA's question about how logs are reviewed.
+
+### What it watches for
+
+Every 15 minutes the server checks recent activity against a set of rules:
+
+- **Unusual volume:** one account reading far more message history, or running far more searches, than normal in an hour.
+- **Bulk deletion:** many messages deleted in a few minutes.
+- **Records exports:** any time someone exports a course's full records, so a second person can confirm it matches an approved request.
+- **Restricted-course attempts:** an administrator trying to open a course they're blocked from.
+- **After-hours administration:** reviews, exports or restriction changes outside normal working hours.
+- **New or off-campus logins:** a returning user signing in from a network address they haven't used before, or from outside the campus network once those ranges are configured.
+- **Repeated reports:** several different people reporting the same person.
+- **Unhandled reports:** a reported message nobody has acted on after three days.
+
+Every threshold is a setting the department can tune once real pilot traffic shows what normal looks like.
+
+### Handling alerts
+
+Alerts appear at the top of the Audit Review page, highest severity first, and a count appears on the page's sidebar link. A reviewer can acknowledge an alert, dismiss it, or reopen it, with a note on what they checked. Each of those actions is itself recorded. Re-checking never creates duplicates, and a dismissed alert stays dismissed.
+
+The separation-of-duties rule carries over. The administrator never sees alerts about his own activity, such as his own exports, after-hours work or blocked attempts, so he can't dismiss them. Only the chair and co-chair see those.
+
+### Working with campus security tools
+
+Network intrusion-detection systems and file scanners can't see this kind of behaviour, because to them it looks like normal web traffic. So the app does the detection itself. It also writes every new alert to a log file in a standard format, containing record identifiers and counts but no names or message content. Campus security monitoring tools can collect that file, so these alerts can flow into whatever system UTSA's security office already watches.
+
+### Verification
+
+A new automated test generates suspicious activity in a fresh course and confirms:
+
+- every rule fires;
+- alerts contain no names;
+- the administrator can't see or clear alerts about himself;
+- acknowledgments survive a re-check and re-checking creates no duplicates;
+- students are refused;
+- the log file is written without personal data.
+
+The off-campus rule was checked by hand against a sample campus network range. All earlier test suites still pass. The change was merged only after the automated check passed in the cloud.
+
+Two of the rules, new and off-campus logins, depend on the server seeing users' real network addresses. That will be handled in the upcoming deployment work.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.

@@ -304,6 +304,23 @@ Anyone can now report a message, with a reason and optional details, and a copy 
 
 ---
 
+### 2026-11-02 — Entry 029: Automatic security alerts from the audit trail
+
+The app now watches its own audit trail and raises alerts for reviewers. Every 15 minutes it checks for:
+
+- unusually heavy reading or searching
+- bulk deletions
+- course records exports
+- attempts to open restricted courses
+- after-hours administrative work
+- logins from new or off-campus addresses
+- the same person reported by several users
+- reports left unhandled
+
+Alerts appear on the Audit Review page, where reviewers acknowledge or dismiss them with a note. The administrator never sees alerts about his own activity; those go only to the chair and co-chair. Each alert is also written, without personal data, to a log file that campus security monitoring tools can collect. An automated test covering every rule now runs on every proposed change.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
