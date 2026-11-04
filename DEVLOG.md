@@ -537,6 +537,30 @@ Two of the rules, new and off-campus logins, depend on the server seeing users' 
 
 ---
 
+## 2026-11-03 — Chat access follows the Canvas course role
+
+Nobody logs in to the app: Canvas tells it who the person is and what role they hold in the course they opened it from. This change tightens how that role is read, and decides who may use the chat at all.
+
+### Who gets in
+
+Only the course's instructors (including co-instructors), teaching assistants and students can use the chat. Observers, course designers, Canvas administrators, and anyone with no role in the course see a short page saying chat isn't available for their role. The app creates no account for them, and records the refused attempt with the Canvas role names only, never the person's name. If someone loses their role, such as a student who becomes an observer, they're removed from the course's member list the next time they open the app.
+
+### A loophole closed
+
+Canvas sends two kinds of role with every launch: the person's role in this course, and their roles across the whole university. The app used to look for the word "Instructor" anywhere in that list. As a result, a teaching assistant, or a student who happens to teach a section elsewhere, could have been treated as an instructor in this course. The app now reads only the course role, and checks for teaching assistants first so they're never promoted.
+
+### Department reviewers
+
+The chair and co-chair review records across courses, so they may open the app from a course where they aren't an instructor, TA or student. They still get in, but only to the Audit Review page, with no access to that course's chat. The same applies to the administrator, and the course is added to the administrator's restricted list, so the conflict-of-interest rule still holds.
+
+### Verification
+
+New automated tests check the role rules directly: course versus university roles, teaching assistants, refused roles and reviewers. An end-to-end test confirms that refused launches get no session and are recorded without names, that a demoted student loses membership, that review-only sessions can't reach chat, and that the administrator's course is restricted. All earlier test suites still pass. The change was merged only after the automated check passed in the cloud.
+
+The rules follow the published standard for how learning platforms describe roles. Once UTSA's test course is ready, the next step is to confirm what Canvas actually sends for each kind of enrollment.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.

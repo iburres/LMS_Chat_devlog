@@ -321,6 +321,12 @@ Alerts appear on the Audit Review page, where reviewers acknowledge or dismiss t
 
 ---
 
+### 2026-11-03 — Entry 030: Chat access follows the Canvas course role
+
+Only a course's instructors, co-instructors, TAs and students can now use the chat. Observers, course designers and Canvas administrators see a short "not available for your role" page, and the refused attempt is recorded without names. The app now reads only the person's role in the course, closing a loophole where a TA, or a student who teaches elsewhere, could have been treated as an instructor. Department reviewers opening the app from a course where they hold no such role get the Audit Review page only. Automated tests covering these rules run on every proposed change.
+
+---
+
 ## Testing
 
 This prototype is planned for testing with students and instructors at the **University of Texas San Antonio (UTSA)**.
